@@ -12,7 +12,9 @@ import 'dart:io';
 import 'package:path_provider/path_provider.dart';
 
 class ColoringSvgScreen extends StatefulWidget {
-  const ColoringSvgScreen({super.key});
+  final String imagePath;
+
+  const ColoringSvgScreen({super.key, required this.imagePath});
 
   @override
   State<ColoringSvgScreen> createState() => _ColoringSvgScreenState();
@@ -54,6 +56,10 @@ class _ColoringSvgScreenState extends State<ColoringSvgScreen> {
         final file = File(imagePath);
         await file.writeAsBytes(pngBytes);
 
+        // Save the image to the gallery
+        //final result = await GallerySaver.saveImage(imagePath);
+        //print("Image saved to gallery: $result");
+
         // Show a success message or a dialog
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Image saved successfully!')),
@@ -71,10 +77,8 @@ class _ColoringSvgScreenState extends State<ColoringSvgScreen> {
   Size? _size;
   List<PathSvgItem>? _items;
 
-  static const String assetPathDogWithSmile = 'assets/kukhwa.svg';
-
   Future<void> _init() async {
-    final value = await getVectorImageFromFile(assetPathDogWithSmile);
+    final value = await getVectorImageFromFile(widget.imagePath);
     setState(() {
       _items = value.items;
       _size = value.size;
@@ -105,7 +109,7 @@ class _ColoringSvgScreenState extends State<ColoringSvgScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Coloring SVG'),
+        title: const Text('Dancheong Coloring'),
         actions: [
           IconButton(
             onPressed: _saveImage, // Call the save function

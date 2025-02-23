@@ -1,5 +1,3 @@
-
-
 import 'dart:ui';
 
 const Color kRichBlack = Color(0xFF000814);
