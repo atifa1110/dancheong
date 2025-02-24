@@ -69,14 +69,14 @@ class _ColoringSvgScreenState extends State<ColoringSvgScreen> {
     try {
       RenderRepaintBoundary boundary =
       _globalKey.currentContext!.findRenderObject() as RenderRepaintBoundary;
-      ui.Image image = await boundary.toImage();
+      ui.Image image = await  boundary.toImage(pixelRatio: 2.0);
       ByteData? byteData = await image.toByteData(format: ui.ImageByteFormat.png);
 
       if (byteData != null) {
         Uint8List pngBytes = byteData.buffer.asUint8List();
         String picturesPath = "${DateTime
             .now()
-            .millisecondsSinceEpoch}.jpg";
+            .millisecondsSinceEpoch}.png";
         final result = await SaverGallery.saveImage(
           pngBytes,
           quality: 100,
@@ -154,6 +154,8 @@ class _ColoringSvgScreenState extends State<ColoringSvgScreen> {
             child: _items == null || _size == null
                 ? const Center(child: CircularProgressIndicator())
                 : InteractiveViewer(
+              minScale: 0.1, // Allow zooming out to 10%
+              maxScale: 10.0, // Allow zooming in to 1000% (10x)
               child: Center(
                 //... (rest of your InteractiveViewer and SVG display code)
                 child: FittedBox(
@@ -193,16 +195,16 @@ class _ColoringSvgScreenState extends State<ColoringSvgScreen> {
               children: [
                 const SizedBox(width: 16),
                 const SizedBox(
-                  width: 100,// Expand the first section to push the text to the middle
+                  width: 80,// Expand the first section to push the text to the middle
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.center, // Center the text horizontally
                     children: [
-                      Icon(Icons.palette, size: 22, color: Colors.grey),
+                      Icon(Icons.palette, size: 20, color: Colors.grey),
                       SizedBox(width: 5),
                       Text(
                         'Colors',
                         style: TextStyle(
-                          fontSize: 20,
+                          fontSize: 16,
                           fontWeight: FontWeight.bold,
                           color: Colors.grey,
                         ),
@@ -231,7 +233,7 @@ class _ColoringSvgScreenState extends State<ColoringSvgScreen> {
                           });
                         },
                         child: Container(
-                          width: 80,
+                          width: 50,
                           margin: const EdgeInsets.only(right: 8, top: 8, bottom: 8), // Adjust margin
                           decoration: BoxDecoration(
                             color: color,

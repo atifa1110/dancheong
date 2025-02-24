@@ -21,8 +21,10 @@ class SvgPainter extends CustomPainter {
   bool? hitTest(Offset position) {
     Path path = pathSvgItem.path;
     if (path.contains(position)) {
-      onTap();
-      return true;
+      if (pathSvgItem.fill!= const Color(0xFF241A16)) {
+        onTap();
+        return true;
+      }
     }
     return super.hitTest(position);
   }
