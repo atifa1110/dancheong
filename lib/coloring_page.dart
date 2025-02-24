@@ -1,15 +1,20 @@
+import 'package:dancheong/constant.dart';
 import 'package:dancheong/svg_painter.dart';
 import 'package:dancheong/utils.dart';
 import 'package:dancheong/vector_image.dart';
+import 'package:device_info_plus/device_info_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 
 import 'dart:typed_data';
 import 'dart:ui' as ui;
 import 'dart:io';
 
-import 'package:path_provider/path_provider.dart';
+import 'package:permission_handler/permission_handler.dart';
+import 'package:saver_gallery/saver_gallery.dart';
+
 
 class ColoringSvgScreen extends StatefulWidget {
   final String imagePath;
@@ -36,40 +41,59 @@ class _ColoringSvgScreenState extends State<ColoringSvgScreen> {
   void initState() {
     _init();
     super.initState();
+    _requestPermission();
   }
 
   final GlobalKey _globalKey = GlobalKey(); // GlobalKey for RepaintBoundary
 
-  // Function to save the image
-  Future<void> _saveImage() async {
+  /// Requests necessary permissions based on the platform.
+  Future<void> _requestPermission() async {
+    bool statuses;
+    if (Platform.isAndroid) {
+      final deviceInfoPlugin = DeviceInfoPlugin();
+      final deviceInfo = await deviceInfoPlugin.androidInfo;
+      final sdkInt = deviceInfo.version.sdkInt;
+      statuses = sdkInt < 29 ? await Permission.storage
+          .request()
+          .isGranted : true;
+    } else {
+      statuses = await Permission.photosAddOnly
+          .request()
+          .isGranted;
+    }
+    print('Permission Request Result: $statuses');
+  }
+
+  // Example usage within your existing _saveScreen function or elsewhere:
+  Future<void> _saveScreen() async {
     try {
       RenderRepaintBoundary boundary =
       _globalKey.currentContext!.findRenderObject() as RenderRepaintBoundary;
       ui.Image image = await boundary.toImage();
       ByteData? byteData = await image.toByteData(format: ui.ImageByteFormat.png);
-      Uint8List pngBytes = byteData!.buffer.asUint8List();
 
-      // Get the external storage directory
-      final directory = await getExternalStorageDirectory();
-      if (directory!= null) {
-        final imagePath = '${directory.path}/colored_image.png';
-        final file = File(imagePath);
-        await file.writeAsBytes(pngBytes);
-
-        // Save the image to the gallery
-        //final result = await GallerySaver.saveImage(imagePath);
-        //print("Image saved to gallery: $result");
-
-        // Show a success message or a dialog
+      if (byteData != null) {
+        Uint8List pngBytes = byteData.buffer.asUint8List();
+        String picturesPath = "${DateTime
+            .now()
+            .millisecondsSinceEpoch}.jpg";
+        final result = await SaverGallery.saveImage(
+          pngBytes,
+          quality: 100,
+          fileName: picturesPath,
+          skipIfExists: false,
+        );
+        print("Result : ${result.toString()}");
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Image saved successfully!')),
+            const SnackBar(content: Text('Image saved to gallery!')));
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Failed to save image')),
         );
       }
     } catch (e) {
-      print('Error saving image: $e');
-      // Show an error message
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Failed to save image.')),
+        const SnackBar(content: Text('Failed to save image')),
       );
     }
   }
@@ -87,12 +111,17 @@ class _ColoringSvgScreenState extends State<ColoringSvgScreen> {
 
   Color _currentColor = Colors.red; // Default color
   final List<Color> _availableColors = [
-    Colors.red,
-    Colors.green,
-    Colors.blue,
-    Colors.yellow,
-    Colors.purple,
-    Colors.orange,
+    color1,
+    color2,
+    color3,
+    color4,
+    color5,
+    color6,
+    color7,
+    color8,
+    color9,
+    color10,
+    color11,
     // Add more colors as needed
   ];
 
@@ -112,7 +141,7 @@ class _ColoringSvgScreenState extends State<ColoringSvgScreen> {
         title: const Text('Dancheong Coloring'),
         actions: [
           IconButton(
-            onPressed: _saveImage, // Call the save function
+            onPressed: _saveScreen, // Call the save function
             icon: const Icon(Icons.save),
           ),
         ],
@@ -152,7 +181,7 @@ class _ColoringSvgScreenState extends State<ColoringSvgScreen> {
 
           // Color Selection List
           Container(
-            height: 120,
+            height: 80,
             padding: const EdgeInsets.symmetric(vertical: 8),
             decoration: BoxDecoration(
               border: Border.all(
@@ -164,7 +193,7 @@ class _ColoringSvgScreenState extends State<ColoringSvgScreen> {
               children: [
                 const SizedBox(width: 16),
                 const SizedBox(
-                  width: 120,// Expand the first section to push the text to the middle
+                  width: 100,// Expand the first section to push the text to the middle
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.center, // Center the text horizontally
                     children: [
@@ -173,7 +202,7 @@ class _ColoringSvgScreenState extends State<ColoringSvgScreen> {
                       Text(
                         'Colors',
                         style: TextStyle(
-                          fontSize: 22,
+                          fontSize: 20,
                           fontWeight: FontWeight.bold,
                           color: Colors.grey,
                         ),
@@ -185,13 +214,13 @@ class _ColoringSvgScreenState extends State<ColoringSvgScreen> {
                 Container(
                   margin: const EdgeInsets.symmetric(vertical: 10),
                   width: 1,
-                  color: Colors.grey,
+                  color: Colors.black,
                 ),
                 const SizedBox(width: 16),
                 Expanded( // Expand the ListView to fill available space
                   child: ListView.builder(
                     scrollDirection: Axis.horizontal,
-                    padding: const EdgeInsets.only(left: 50, right: 50), // Add left padding for "Colors" text
+                    padding: const EdgeInsets.only(right: 50), // Add left padding for "Colors" text
                     itemCount: _availableColors.length,
                     itemBuilder: (context, index) {
                       final color = _availableColors[index];
@@ -202,7 +231,7 @@ class _ColoringSvgScreenState extends State<ColoringSvgScreen> {
                           });
                         },
                         child: Container(
-                          width: 100,
+                          width: 80,
                           margin: const EdgeInsets.only(right: 8, top: 8, bottom: 8), // Adjust margin
                           decoration: BoxDecoration(
                             color: color,

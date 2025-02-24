@@ -1,17 +1,21 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter_svg/svg.dart';
 import 'coloring_page.dart';
+
 
 void main() {
   runApp(MyApp());
 }
 
 class MyApp extends StatelessWidget {
+  const MyApp({super.key});
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Coloring App',
-      home: ImageSelectionScreen(),
+      home: ImageSelectionScreen()
     );
   }
 }
